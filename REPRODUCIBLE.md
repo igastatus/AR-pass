@@ -7,7 +7,6 @@ These steps are performed on Debian, however you can probably follow these steps
 git clone https://github.com/igastatus/ar-pass.git
 cd ar-pass
 arweave deploy-dir src --key-file wallet.json 
-
 ```
 
 After deploying the AR-pass, you can use `wget` to fetch web pages and verify the result from `arweave deploy-dir` by matching checksums.
