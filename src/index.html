@@ -1,557 +1,434 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <link rel="stylesheet" href="primer.min.css" />
-    <script src="web.bundle.min.js"></script>
-    <title>AR-pass</title>
-    <script src="sjcl.min.js"></script>
-    <script src="upload.js" charset="utf-8"></script>
-    <script src="generator.js" charset="utf-8"></script>
-    <script src="fetch.js" charset="utf-8"></script>
-    <script src="list.js" charset="utf-8"></script>
-  </head>
-
-  <body>
-    <br />
-    <div class="container-lg col-10">
-      <h1>
-        AR-pass
-      </h1>
-      <h4>
-        Passwords that last forever
-      </h4>
-      <p>
-        Have you ever losed your keyfile or even password database file for your
-        password manager? Now, you don't need to worry about that. Because your
-        passwords will <b>last forever</b> with AR-pass.
-      </p>
-      <h2>
-        How it works?
-      </h2>
-      <p>
-        With Arweave, you can store almost everything forever.
-        <b>AR-pass takes advantage of Arweave.</b> Passwords that you generate
-        is getting encrypted with <code>AES-256</code> and published into
-        Arweave, all you need is your Arweave wallet address and your master
-        password.
-      </p>
-      <p>
-        Basically, your browser will generate a random password for you and this
-        password will be stored at Arweave, forever.
-      </p>
-      <h3>
-        Is it secure?
-      </h3>
-      <p>
-        Yes, <code>AES-256-CBC</code> is secure in 2020 and can't breaked with
-        quantum computers with known attacks for now. That means it is secure to
-        use <b>AR-pass</b> as long as encryption algorithm is safe.
-        <b>With a few caveats.</b>
-      </p>
-      <h3>
-        Caveats
-      </h3>
-      <ul>
-        <li>Your browser isn't always secure.</li>
-        <li>
-          Your random number generator isn't always true random number
-          generator.
-        </li>
-        <li>Your computer might be compromised.</li>
-      </ul>
-      <p>
-        You should use an offline computer with <b>T</b>rue <b>R</b>andom
-        <b>N</b>umber <b>G</b>enerator in extreme cases.
-      </p>
-      <a onclick="showPassword()" class="btn btn-primary">Generate password</a>
-      <a onclick="fetchPassword()" class="btn btn-secondary">Fetch password</a>
-      <a onclick="listPasswords()" class="btn btn-secondary">List password(s)</a>
-      <br />
-      <br />
-      <p>
-        You'll need an Arweave wallet with balance to save your password into
-        Arweave.
-      </p>
-      <div class="anim-fade-in" id="getPassword" style="display: none;">
-        <h2>
-          Fetch password
-        </h2>
-        <div class="Box">
-          <div class="Box-header">
-            <h3 class="Box-title">
-              Fetch password
-            </h3>
-          </div>
-          <div class="Box-body">
-            <input type="text" id="tx" placeholder="Enter TXID" /><br /><br />
-            <input
-              type="password"
-              id="pass"
-              placeholder="Enter password"
-            /><br /><br />
-            <button class="btn btn-primary" onclick="fetchPass()">
-              Fetch password
-            </button>
-          </div>
-          <div class="Box-footer">
-            <p>
-              Password: <span id="getpass"></span><br />
-              <small>Only shown if password is fetched and decrypted succesfully.</small>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="anim-fade-in" id="listPasswords" style="display: none;">
-        <div class="Box">
-          <div class="Box-header">
-            <h3 class="Box-title">
-              List passwords
-            </h3>
-          </div>
-          <div class="Box-body">
-            <input type="text" name="address" id="address" placeholder="Please enter Arweave address">
-            <a onclick="arqlPassword()" class="btn btn-primary">View password TXID's</a><br/><br/>
-            <div class="col-10 mx-auto">
-                <span id="passwordListing"></span>
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <link rel="stylesheet" href="bootstrap-material-design.min.css">
+      <script src="web.bundle.min.js"></script>
+      <script src="list.js" charset="utf-8"></script>
+      <script src="upload.js" charset="utf-8"></script>
+      <script src="sjcl.min.js" charset="utf-8"></script>
+      <title>AR-pass</title>
+   </head>
+   <body>
+      <br>
+      <div class="d-flex justify-content-center">
+         <div class="card" style="max-width: 600px;" id="app-home">
+            <div class="card-body text-center">
+               <h1 class="card-title">AR-pass</h1>
+               <p>Securely store your passwords forever with Arweave.</p>
+               <h5>How it works?</h5>
+               <p>AR-pass securely generates a password for you and stores it on the Arweave network, so, you won't lose your passwords again. <i>As an extra layer of security</i>, your passwords are encrypted with a master password that you'll choose.</p>
+               <div class="card">
+                  <div class="card-body text-left">
+                     <h4>Continue to AR-pass</h4>
+                     <form>
+                        <div class="form-group">
+                           <label for="exampleFormControlFile1">Arweave keyfile</label>
+                           <input type="file" class="form-control-file" id="arweave-keyfile">
+                           <pre id="output"></pre>
+                        </div>
+                     </form>
+                     <button type="button" class="btn btn-outline-primary" onclick="continueToApp()">Continue</button>
+                     <p>An Arweave wallet is required to continue.</p>
+                  </div>
+               </div>
             </div>
-          </div>
-          <div class="Box-footer">
-            TXID's will be only listed if there are valid passwords.
-          </div>
+         </div>
+         <div class="card" style="max-width: 1000px; display: none;" id="ui">
+            <div class="card-body text-center">
+               <div class="row">
+                  <div class="col-8">
+                     <h2>AR-pass</h2>
+                  </div>
+                  <div class="col-4">
+                     <p>Your wallet address is:<br>
+                        <span id="walletAddress"></span>
+                     </p>
+                  </div>
+               </div>
+               <br>
+               <p>Generating, storing and fetching your passwords <i>securely</i> on the Arweave.</p>
+               <p>Please select an operation to continue:</p>
+               <div class="btn-group" role="group" aria-label="Basic example">
+                  <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#generatePassword">Generate password</button>
+                  <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#fetchPassword">List password(s)</button>
+               </div>
+            </div>
+         </div>
       </div>
-      <div class="anim-fade-in" id="genPassword" style="display: none;">
-        <h2>
-          Generate password
-        </h2>
-        <div class="Box">
-          <div class="Box-header">
-            <h3 class="Box-title">
-              Arweave wallet
-            </h3>
-          </div>
-          <div class="Box-body">
-            <p>
-              An Arweave wallet with balance is required to upload encrypted
-              password to the Arweave.
-            </p>
-            <input type="file" name="inputfile" id="inputfile" /><br />
-            <pre id="output"></pre>
-          </div>
-          <div class="Box-footer">
-            Please visit <a href="https://arweave.org">Arweave website</a> for
-            more information.
-          </div>
-        </div>
-        <br />
-        <div class="Box">
-          <div class="Box-header">
-            <h3 class="Box-title">
-              Generate password
-            </h3>
-          </div>
-          <div class="Box-body">
-            <form action="#" method="get" onsubmit="doGenerate(event);">
-              <div id="charset" class="section" style="margin:0.8em 0em">
-                <p style="margin:0.3em 0em">Character set:</p>
-                <table style="line-height:1.5">
-                  <tbody>
-                    <tr>
-                      <td><input type="checkbox" id="custom" /></td>
-                      <td>
-                        <label for="custom"> Custom:</label>
-                        <input
-                          type="text"
-                          id="customchars"
-                          value=""
-                          size="15"
-                          style="width:10em; font-size:80%"
-                          oninput="document.getElementById('custom').checked=true;"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="section">
-                <table id="type">
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input
-                          type="radio"
-                          name="type"
-                          id="by-length"
-                          checked="checked"
-                        />
-                        <label for="by-length">Length:&#xA0;</label>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          min="0"
-                          value="10"
-                          step="1"
-                          id="length"
-                          style="width:4em"
-                          oninput="document.getElementById('by-length').checked=true;"
-                        />
-                        characters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input type="radio" name="type" id="by-entropy" />
-                        <label for="by-entropy">Entropy:</label>&#xA0;
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          min="0"
-                          value="128"
-                          step="any"
-                          id="entropy"
-                          style="width:4em"
-                          oninput="document.getElementById('by-entropy').checked=true;"
-                        />
-                        bits
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p
-                style="max-width:unset; line-height:1.35; word-break:break-all"
-              >
-                <input type="submit" value="Generate" />
-                <input
-                  type="button"
-                  value="Copy"
-                  id="copy-button"
-                  onclick="doCopy();"
-                  disabled="disabled"
-                />
-                Password: <span id="password"></span>
-              </p>
-            </form>
-          </div>
-          <div class="Box-footer">
-            In the next step, password will be uploaded to Arweave if you choose
-            to.
-          </div>
-        </div>
-        <br />
-        <div class="Box">
-          <div class="Box-header">
-            <h3 class="Box-title">
-              Upload password
-            </h3>
-          </div>
-          <div class="Box-body">
-            <p>
-              <label
-                >Please enter master password to encrypt generated password
-                before uploading to Arweave</label
-              >
-              <br /><input id="encryption" placeholder="Enter password" />
-              <br /><small
-                >You'll use master password to decrypt the generated
-                password.</small
-              ><br />
-              <a onclick="uploadPassword()" class="btn btn-primary"
-                >Upload Password</a
-              >
-            </p>
-          </div>
-          <div class="Box-footer">
-            <b>TXID</b>: <span id="txout"></span>
-            <br />
-            Only shown if password is uploaded to Arweave succesfully.
-          </div>
-        </div>
+      <div class="modal fade" id="generatePassword" tabindex="-1" role="dialog" aria-labelledby="generatePassword" aria-hidden="true">
+         <div class="modal-dialog" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Generate Password</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+               </div>
+               <div class="modal-body">
+                  <form action="#" method="get" onsubmit="doGenerate(event);">
+                     <div id="charset" class="section" style="margin:0.8em 0em">
+                        <div class="card">
+                           <div class="card-body">
+                              <p style="margin:0.3em 0em">Character set:</p>
+                              <table style="line-height:1.5">
+                                 <tbody>
+                                    <tr>
+                                       <td><input type="checkbox" id="custom"></td>
+                                       <td><label for="custom"> Custom:</label> <input type="text" id="customchars" value="" size="15" style="width:10em; font-size:80%" oninput="document.getElementById('custom').checked=true;"></td>
+                                    </tr>
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="card">
+                        <div class="card-body">
+                           <table id="type">
+                              <tbody>
+                                 <tr>
+                                    <td><input type="radio" name="type" id="by-length" checked="checked"> <label for="by-length">Length:&#xA0;</label></td>
+                                    <td><input type="number" min="0" value="10" step="1" id="length" style="width:4em" oninput="document.getElementById('by-length').checked=true;"> characters</td>
+                                 </tr>
+                                 <tr>
+                                    <td><input type="radio" name="type" id="by-entropy"> <label for="by-entropy">Entropy:</label>&#xA0;</td>
+                                    <td><input type="number" min="0" value="128" step="any" id="entropy" style="width:4em" oninput="document.getElementById('by-entropy').checked=true;"> bits</td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                     <br>
+                     <div class="section card">
+                        <div class="card-body">
+                           <p style="max-width:unset; line-height:1.35; word-break:break-all">
+                              <input type="submit" class="btn btn-outline-primary" value="Generate">
+                              <input type="button" class="btn btn-outline-secondary" value="Copy" id="copy-button" onclick="doCopy();" disabled="disabled">
+                           </p>
+                           <br>
+                           <p>
+                              Password: <span id="password"></span>
+                           </p>
+                         </div>
+                       </div>
+                       <br>
+                       <div class="card">
+                         <div class="card-body">
+                           <p>Please enter an master password if you want to upload.</p>
+                           <div class="input-group mb-3">
+                             <input type="text" class="form-control"  id="encryption" placeholder="Master password">
+                           </div>
+                           <p>Please enter an tag (public) for this password, it will help you to recognize password.</p>
+                           <div class="input-group mb-3">
+                             <input type="text" class="form-control" id="tag" placeholder="Password tag">
+                           </div>
+                        </div>
+                     </div>
+                  </form>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" onclick="uploadPassword()">Upload pasword</button>
+               </div>
+            </div>
+         </div>
       </div>
-    </div>
+      <div class="modal fade" id="fetchPassword" tabindex="-1" role="dialog" aria-labelledby="fetchPassword" aria-hidden="true">
+         <div class="modal-dialog" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Fetch password(s)</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+               </div>
+               <div class="modal-body">
+                 <div class="input-group mb-3">
+                   <input type="password" id="pass" class="form-control" placeholder="Master password" aria-label="Username">
+                 </div>
+                 <button type="button" class="btn btn-outline-primary" onclick="arqlPassword()">List passwords</button>
+                 <br> <br>
+                 <p>Passwords will be listed if both</p>
+                 <ul>
+                   <li>You uploaded password(s) with AR-pass.</li>
+                   <li>You entered correct password.</li>
+                 </ul>
+                <div class="card">
+                  <div class="card-body">
+                    <span id="passwordListing"></span>
+                  </div>
+                </div>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script type="text/javascript">
+         function continueToApp() {
+           var ui = document.getElementById("ui");
+           if (ui.style.display === "none") {
+             ui.style.display = "block"
+             hideHome()
+           } else {
+             ui.style.display = "none"
+             hideHome()
+           }
+           getWalletAddress()
+         }
+      </script>
+      <script type="text/javascript">
+         function hideHome() {
+           var app_home = document.getElementById("app-home")
+           if (app_home.style.display === "none") {
+             app_home.style.display = "block";
+           } else {
+             app_home.style.display = "none";
+           }
+         }
+      </script>
+      <script type="text/javascript">
+         document
+         .getElementById("arweave-keyfile")
+         .addEventListener("change", function() {
+           var fr = new FileReader();
+           fr.onload = function() {
+             document.getElementById("output").value = fr.result;
+           };
 
-    <span id="crypto-getrandomvalues-entropy"></span>
-    <br /><br />
-    <script>
-      document
-        .getElementById("inputfile")
-        .addEventListener("change", function() {
-          var fr = new FileReader();
-          fr.onload = function() {
-            document.getElementById("output").value = fr.result;
-          };
+           fr.readAsText(this.files[0]);
+         });
+      </script>
+      <script type="text/javascript">
+         async function getWalletAddress() {
+             const arweave = Arweave.init({
+               host: "arweave.net",
+               port: 443,
+               protocol: "https",
+               timeout: 20000,
+               logging: false
+             });
+             var wallet_file = await JSON.parse(document.getElementById("output").value);
+             arweave.wallets.jwkToAddress(wallet_file).then((address) => {
+               document.getElementById("walletAddress").innerHTML = address;
+             });
+           }
+      </script>
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+      <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+      <script type="text/javascript">
+         "use strict";
+         var CHARACTER_SETS = [
+           [true, "Numbers", "0123456789"],
+           [true, "Lowercase", "abcdefghijklmnopqrstuvwxyz"],
+           [false, "Uppercase", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"],
+           [
+             false,
+             "ASCII symbols",
+             '!"#$%' +
+               String.fromCharCode(38) +
+               "'()*+,-./:;" +
+               String.fromCharCode(60) +
+               "=>?@[\\]^_`{|}~"
+           ],
+           [false, "Space", " "]
+         ];
+         var passwordElem = document.getElementById("password");
+         var statisticsElem = document.getElementById("statistics");
+         var copyElem = document.getElementById("copy-button");
+         var cryptoObject = null;
+         var currentPassword = null;
+         function initCharsets() {
+           function createElem(tagName, attribs) {
+             var result = document.createElement(tagName);
+             if (attribs !== undefined) {
+               for (var key in attribs) result[key] = attribs[key];
+             }
+             return result;
+           }
 
-          fr.readAsText(this.files[0]);
-        });
-    </script>
-    <script>
-      function showPassword() {
-        var x = document.getElementById("genPassword");
-        if (x.style.display === "none") {
-          x.style.display = "block";
-        } else {
-          x.style.display = "none";
-        }
-      }
-      function fetchPassword() {
-        var x = document.getElementById("getPassword");
-        if (x.style.display === "none") {
-          x.style.display = "block";
-        } else {
-          x.style.display = "none";
-        }
-      }
-      function listPasswords() {
-        var x = document.getElementById("listPasswords");
-        if (x.style.display === "none") {
-          x.style.display = "block";
-        } else {
-          x.style.display = "none";
-        }
-      }
-    </script>
-    <script type="text/javascript">
-      "use strict";
+           var container = document.querySelector("#charset tbody");
+           var endElem = document.querySelector("#charset tbody > tr:last-child");
+           CHARACTER_SETS.forEach(function(entry, i) {
+             var tr = createElem("tr");
+             var td = tr.appendChild(createElem("td"));
+             var input = td.appendChild(
+               createElem("input", {
+                 type: "checkbox",
+                 checked: entry[0],
+                 id: "charset-" + i
+               })
+             );
+             var td = tr.appendChild(createElem("td"));
+             var label = td.appendChild(
+               createElem("label", {
+                 htmlFor: "charset-" + i,
+                 textContent: " " + entry[1] + " "
+               })
+             );
+             var small = label.appendChild(
+               createElem("small", {
+                 textContent: "(" + entry[2] + ")"
+               })
+             );
+             container.insertBefore(tr, endElem);
+           });
+         }
+         function initCrypto() {
+           var elem = document.getElementById("crypto-getrandomvalues-entropy");
+           elem.textContent = "\u2717"; // X mark
 
-/*-- Configuration --*/
+           if ("crypto" in window) cryptoObject = crypto;
+           else if ("msCrypto" in window) cryptoObject = msCrypto;
+           else return;
 
-var CHARACTER_SETS = [
-  [true, "Numbers", "0123456789"],
-  [true, "Lowercase", "abcdefghijklmnopqrstuvwxyz"],
-  [false, "Uppercase", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"],
-  [
-    false,
-    "ASCII symbols",
-    '!"#$%' +
-      String.fromCharCode(38) +
-      "'()*+,-./:;" +
-      String.fromCharCode(60) +
-      "=>?@[\\]^_`{|}~"
-  ],
-  [false, "Space", " "]
-];
+           if (
+             !("getRandomValues" in cryptoObject) ||
+             !("Uint32Array" in window) ||
+             typeof Uint32Array != "function"
+           )
+             cryptoObject = null;
+           else elem.textContent = "\u2713";
+         }
+         function doGenerate(ev) {
+           ev.preventDefault();
 
-/*-- Global variables --*/
+           // Get and check character set
+           var charset = getPasswordCharacterSet();
+           if (charset.length == 0) {
+             alert("Error: Character set is empty");
+             return;
+           } else if (
+             document.getElementById("by-entropy").checked
+               ? charset.length == 1
+               : false
+           ) {
+             alert("Error: Need at least 2 distinct characters in set");
+             return;
+           }
 
-var passwordElem = document.getElementById("password");
-var statisticsElem = document.getElementById("statistics");
-var copyElem = document.getElementById("copy-button");
-var cryptoObject = null;
-var currentPassword = null;
+           // Calculate desired length
+           var length;
+           if (document.getElementById("by-length").checked)
+             length = parseInt(document.getElementById("length").value, 10);
+           else if (document.getElementById("by-entropy").checked)
+             length = Math.ceil(
+               (parseFloat(document.getElementById("entropy").value) *
+                 Math.log(2)) /
+                 Math.log(charset.length)
+             );
+           else throw "Assertion error";
 
-/*-- Initialization --*/
+           // Check length
+           if (0 > length) {
+             alert("Negative password length");
+             return;
+           } else if (length > 10000) {
+             alert("Password length too large");
+             return;
+           }
 
-function initCharsets() {
-  function createElem(tagName, attribs) {
-    var result = document.createElement(tagName);
-    if (attribs !== undefined) {
-      for (var key in attribs) result[key] = attribs[key];
-    }
-    return result;
-  }
+           // Generate password
+           currentPassword = generatePassword(charset, length);
 
-  var container = document.querySelector("#charset tbody");
-  var endElem = document.querySelector("#charset tbody > tr:last-child");
-  CHARACTER_SETS.forEach(function(entry, i) {
-    var tr = createElem("tr");
-    var td = tr.appendChild(createElem("td"));
-    var input = td.appendChild(
-      createElem("input", {
-        type: "checkbox",
-        checked: entry[0],
-        id: "charset-" + i
-      })
-    );
-    var td = tr.appendChild(createElem("td"));
-    var label = td.appendChild(
-      createElem("label", {
-        htmlFor: "charset-" + i,
-        textContent: " " + entry[1] + " "
-      })
-    );
-    var small = label.appendChild(
-      createElem("small", {
-        textContent: "(" + entry[2] + ")"
-      })
-    );
-    container.insertBefore(tr, endElem);
-  });
-}
+           // Calculate and format entropy
+           var entropy = (Math.log(charset.length) * length) / Math.log(2);
+           var entropystr;
+           if (70 > entropy) entropystr = entropy.toFixed(2);
+           else if (200 > entropy) entropystr = entropy.toFixed(1);
+           else entropystr = entropy.toFixed(0);
 
-function initCrypto() {
-  var elem = document.getElementById("crypto-getrandomvalues-entropy");
-  elem.textContent = "\u2717"; // X mark
+           // Set output elements
+           passwordElem.textContent = currentPassword;
+           statisticsElem.textContent =
+             "Length = " +
+             length +
+             " chars, \u00A0\u00A0Charset size = " +
+             charset.length +
+             " symbols, \u00A0\u00A0Entropy = " +
+             entropystr +
+             " bits";
+           copyElem.disabled = false;
+         }
+         function doCopy() {
+           var container = document.querySelector("body");
+           var textarea = document.createElement("textarea");
+           textarea.style.position = "fixed";
+           textarea.style.opacity = "0";
+           container.insertBefore(textarea, container.firstChild);
+           textarea.value = currentPassword;
+           textarea.focus();
+           textarea.select();
+           document.execCommand("copy");
+           container.removeChild(textarea);
+         }
+         function getPasswordCharacterSet() {
+           // Concatenate characters from every checked entry
+           var rawCharset = "";
+           CHARACTER_SETS.forEach(function(entry, i) {
+             if (document.getElementById("charset-" + i).checked)
+               rawCharset += entry[2];
+           });
+           if (document.getElementById("custom").checked)
+             rawCharset += document.getElementById("customchars").value;
+           rawCharset = rawCharset.replace(/ /g, "\u00A0"); // Replace space with non-breaking space
 
-  if ("crypto" in window) cryptoObject = crypto;
-  else if ("msCrypto" in window) cryptoObject = msCrypto;
-  else return;
-
-  if (
-    !("getRandomValues" in cryptoObject) ||
-    !("Uint32Array" in window) ||
-    typeof Uint32Array != "function"
-  )
-    cryptoObject = null;
-  else elem.textContent = "\u2713";
-}
-
-/*-- Entry points from HTML code --*/
-
-function doGenerate(ev) {
-  ev.preventDefault();
-
-  // Get and check character set
-  var charset = getPasswordCharacterSet();
-  if (charset.length == 0) {
-    alert("Error: Character set is empty");
-    return;
-  } else if (
-    document.getElementById("by-entropy").checked
-      ? charset.length == 1
-      : false
-  ) {
-    alert("Error: Need at least 2 distinct characters in set");
-    return;
-  }
-
-  // Calculate desired length
-  var length;
-  if (document.getElementById("by-length").checked)
-    length = parseInt(document.getElementById("length").value, 10);
-  else if (document.getElementById("by-entropy").checked)
-    length = Math.ceil(
-      (parseFloat(document.getElementById("entropy").value) *
-        Math.log(2)) /
-        Math.log(charset.length)
-    );
-  else throw "Assertion error";
-
-  // Check length
-  if (0 > length) {
-    alert("Negative password length");
-    return;
-  } else if (length > 10000) {
-    alert("Password length too large");
-    return;
-  }
-
-  // Generate password
-  currentPassword = generatePassword(charset, length);
-
-  // Calculate and format entropy
-  var entropy = (Math.log(charset.length) * length) / Math.log(2);
-  var entropystr;
-  if (70 > entropy) entropystr = entropy.toFixed(2);
-  else if (200 > entropy) entropystr = entropy.toFixed(1);
-  else entropystr = entropy.toFixed(0);
-
-  // Set output elements
-  passwordElem.textContent = currentPassword;
-  statisticsElem.textContent =
-    "Length = " +
-    length +
-    " chars, \u00A0\u00A0Charset size = " +
-    charset.length +
-    " symbols, \u00A0\u00A0Entropy = " +
-    entropystr +
-    " bits";
-  copyElem.disabled = false;
-}
-
-function doCopy() {
-  var container = document.querySelector("body");
-  var textarea = document.createElement("textarea");
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  container.insertBefore(textarea, container.firstChild);
-  textarea.value = currentPassword;
-  textarea.focus();
-  textarea.select();
-  document.execCommand("copy");
-  container.removeChild(textarea);
-}
-
-/*-- Low-level functions --*/
-
-function getPasswordCharacterSet() {
-  // Concatenate characters from every checked entry
-  var rawCharset = "";
-  CHARACTER_SETS.forEach(function(entry, i) {
-    if (document.getElementById("charset-" + i).checked)
-      rawCharset += entry[2];
-  });
-  if (document.getElementById("custom").checked)
-    rawCharset += document.getElementById("customchars").value;
-  rawCharset = rawCharset.replace(/ /g, "\u00A0"); // Replace space with non-breaking space
-
-  // Parse UTF-16, remove duplicates, convert to array of strings
-  var charset = [];
-  for (var i = 0; rawCharset.length > i; i++) {
-    var c = rawCharset.charCodeAt(i);
-    if (0xd800 > c || c >= 0xe000) {
-      // Regular UTF-16 character
-      var s = rawCharset.charAt(i);
-      if (charset.indexOf(s) == -1) charset.push(s);
-      continue;
-    }
-    if (0xdc00 > c ? rawCharset.length > i + 1 : false) {
-      // High surrogate
-      var d = rawCharset.charCodeAt(i + 1);
-      if (d >= 0xdc00 ? 0xe000 > d : false) {
-        // Low surrogate
-        var s = rawCharset.substring(i, i + 2);
-        i++;
-        if (charset.indexOf(s) == -1) charset.push(s);
-        continue;
-      }
-    }
-    throw "Invalid UTF-16";
-  }
-  return charset;
-}
-
-function generatePassword(charset, len) {
-  var result = "";
-  for (var i = 0; len > i; i++)
-    result += charset[randomInt(charset.length)];
-  return result;
-}
-
-// Returns a random integer in the range [0, n) using a variety of methods.
-function randomInt(n) {
-  var x = randomIntMathRandom(n);
-  x = (x + randomIntBrowserCrypto(n)) % n;
-  return x;
-}
-
-// Not secure or high quality, but always available.
-function randomIntMathRandom(n) {
-  var x = Math.floor(Math.random() * n);
-  if (0 > x || x >= n) throw "Arithmetic exception";
-  return x;
-}
-
-// Uses a secure, unpredictable random number generator if available; otherwise returns 0.
-function randomIntBrowserCrypto(n) {
-  if (cryptoObject === null) return 0;
-  // Generate an unbiased sample
-  var x = new Uint32Array(1);
-  do cryptoObject.getRandomValues(x);
-  while (x[0] - (x[0] % n) > 4294967296 - n);
-  return x[0] % n;
-}
-
-/*-- Initialization --*/
-
-initCharsets();
-initCrypto();
-copyElem.disabled = true;
-    </script>
-  </body>
+           // Parse UTF-16, remove duplicates, convert to array of strings
+           var charset = [];
+           for (var i = 0; rawCharset.length > i; i++) {
+             var c = rawCharset.charCodeAt(i);
+             if (0xd800 > c || c >= 0xe000) {
+               // Regular UTF-16 character
+               var s = rawCharset.charAt(i);
+               if (charset.indexOf(s) == -1) charset.push(s);
+               continue;
+             }
+             if (0xdc00 > c ? rawCharset.length > i + 1 : false) {
+               // High surrogate
+               var d = rawCharset.charCodeAt(i + 1);
+               if (d >= 0xdc00 ? 0xe000 > d : false) {
+                 // Low surrogate
+                 var s = rawCharset.substring(i, i + 2);
+                 i++;
+                 if (charset.indexOf(s) == -1) charset.push(s);
+                 continue;
+               }
+             }
+             throw "Invalid UTF-16";
+           }
+           return charset;
+         }
+         function generatePassword(charset, len) {
+           var result = "";
+           for (var i = 0; len > i; i++)
+             result += charset[randomInt(charset.length)];
+           return result;
+         }
+         function randomInt(n) {
+           var x = randomIntMathRandom(n);
+           x = (x + randomIntBrowserCrypto(n)) % n;
+           return x;
+         }
+         function randomIntMathRandom(n) {
+           var x = Math.floor(Math.random() * n);
+           if (0 > x || x >= n) throw "Arithmetic exception";
+           return x;
+         }
+         function randomIntBrowserCrypto(n) {
+           if (cryptoObject === null) return 0;
+           // Generate an unbiased sample
+           var x = new Uint32Array(1);
+           do cryptoObject.getRandomValues(x);
+           while (x[0] - (x[0] % n) > 4294967296 - n);
+           return x[0] % n;
+         }
+         initCharsets();
+         initCrypto();
+         copyElem.disabled = true;
+      </script>
+   </body>
 </html>

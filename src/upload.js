@@ -9,6 +9,7 @@ async function uploadPassword() {
   let key = await JSON.parse(document.getElementById("output").value);
   var password = document.getElementById("password").innerHTML;
   var encryption = document.getElementById("encryption").value;
+  var password_tag = document.getElementById("tag").value;
   var encrypted = JSON.stringify(
     sjcl.encrypt(encryption, password)
   ).replace(/\\/g, "");
@@ -19,8 +20,10 @@ async function uploadPassword() {
     key
   );
   transaction.addTag('App-Name', 'AR-pass');
+  transaction.addTag('Password-Tag', password_tag)
   await arweave.transactions.sign(transaction, key);
   console.log(transaction);
-  document.getElementById("txout").innerHTML = transaction.id;
+  var txid = transaction.id;
   const response = await arweave.transactions.post(transaction);
+  alert("Password uploaded with TXID: " + txid)
 }
